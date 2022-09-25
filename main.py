@@ -2,11 +2,39 @@
 # - any image will be ignored
 
 # Acronyms, ends with ;
-# - mat -> materials
-# - thi -> thickness
-# - com -> components
+# - mat  -> materials
+# - thi  -> thickness
+# - com  -> components
+# - muo  -> made up off
+# - wcf  -> where we can find
+# - prop -> properties
+# - itis   -> it is \the   (default)
+# - 
+
+# Topic types
+# - cycle -> part/step
+# - term -> it is
+# - disr -> (disregarded so it will be displayed as a topic) (default)
+
+import fileinput
+import re
+
+with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
+    for line in md_file:
+        
+        if "> [!source-image]":
+            continue
+
+        topic_tst = re.search("#+ [!*]*(.*)(?<!\*)")[0]
+        if topic_tst:
+            topic = topic_tst
+        
+        linefact_tst = re.search("(!?\s)- ")
+        # topic checker:
+            # topic identifier
 
 
+        # emphasis replacer
 
 
 # --- #
