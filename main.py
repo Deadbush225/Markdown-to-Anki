@@ -45,12 +45,13 @@ test_str = """
 2. Mantle
 	- thickest part, biggest volume
 	- covers the **core** and lies beneath the **crust**
-	- 2.1. outermost mantle
-		- wcf; asthenosphere
-		- cool, strong, and hard (solid)
-	- 2.2. innermost mantle
-		- itis; hot, rock is not stable, soft,
-		- prop; plastic, **magmatic**, viscous
+	- 2 parts of Mantle
+		- 2.1. outermost mantle
+			- wcf; asthenosphere
+			- cool, strong, and hard (solid)
+		- 2.2. innermost mantle
+			- itis; hot, rock is not stable, soft,
+			- prop; plastic, **magmatic**, viscous
 """
 
 def anki_card(topic, front, back):
