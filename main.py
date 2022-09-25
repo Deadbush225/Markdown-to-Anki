@@ -19,17 +19,43 @@
 import fileinput
 import re
 
+
+""" Problem
+1. Core 
+	- mat; heavy metals
+	- 1a. Mantle
+		- itis; thickest part, biggest volume
+		- covers **core** and lies beneath the **crust**
+		- par; outermost mantle
+			- wcf; asthenosphere
+			- cool, strong, and hard (solid)
+		- par; innermost mantle
+			- itis; hot, rock is not stable, soft,
+			- prop; plastic, **magmatic**, viscous
+	- par; Outer Core
+		- thi; 1400 miles thick
+		- com; iron, alloy, and nickel
+	- par; Inner Core
+		- thi; 750 miles thick
+		- com; made up of primary iron
+"""
+
 with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
     for line in md_file:
         
         if "> [!source-image]":
             continue
 
-        topic_tst = re.search("#+ [!*]*(.*)(?<!\*)")[0]
+        topic_tst = re.search(r"#+ [!*]*(.*)(?<!\*)")[0]
         if topic_tst:
             topic = topic_tst
         
-        linefact_tst = re.search("(!?\s)- ")
+        linetopic_tst = re.search(r"[^\t](\d\.)")
+        if linetopic_tst:
+            linetopic = linetopic_tst
+
+        
+        
         # topic checker:
             # topic identifier
 

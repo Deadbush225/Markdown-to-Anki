@@ -48,7 +48,7 @@
 ![[Pasted image 20220906104507.png]]
 1. Core
 	- mat; heavy metals
-	- 2. Mantle
+	- 1a. Mantle
 		- itis; thickest part, biggest volume
 		- covers **core** and lies beneath the **crust**
 		- par; outermost mantle
