@@ -48,19 +48,10 @@
 ![[Pasted image 20220906104507.png]]
 1. Core
 	- mat; heavy metals
-	- 1a. Mantle
-		- itis; thickest part, biggest volume
-		- covers **core** and lies beneath the **crust**
-		- par; outermost mantle
-			- wcf; asthenosphere
-			- cool, strong, and hard (solid)
-		- par; innermost mantle
-			- itis; hot, rock is not stable, soft,
-			- prop; plastic, **magmatic**, viscous
-	- par; Outer Core
+	- 1.1. Outer Core
 		- thi; 1400 miles thick
 		- com; iron, alloy, and nickel
-	- par; Inner Core
+	- 1.1. Inner Core
 		- thi; 750 miles thick
 		- com; made up of primary iron
 
@@ -69,10 +60,10 @@
 2. Mantle
 	- itis; thickest part, biggest volume
 	- covers **core** and lies beneath the **crust**
-	- par; outermost mantle
+	- 2.1. outermost mantle
 		- wcf; asthenosphere
 		- cool, strong, and hard (solid)
-	- par; innermost mantle
+	- 2.2. innermost mantle
 		- itis; hot, rock is not stable, soft,
 		- prop; plastic, **magmatic**, viscous
 
