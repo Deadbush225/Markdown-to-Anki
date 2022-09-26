@@ -9,27 +9,34 @@
 # - prop -> properties
 # - itis   -> it is \the   (default)
 # - 
+
+ignore_line_list = [
+	"> [!source-image]"
+]
+
 acronyms_sub = {
 	"thi": "thickness",
 	"com": "components",
 	"muo": "made up off",
 	"wcf": "where we can find",
 	"prop": "properties",
-	"itis": "it is the"
+	"itis": "it is the",
+	"pt": "parts of"
 }
 
-# == is for the question, and ~~ is for the answer
+# == is for the topic, and ~~ is for the answer
 acronyms_que = {
 	"thi": "How thick is the ==?",
 	"com": "== is composed of what?",
 	"muo": "== is made up off what?",
 	"wcf": "What we can find in the ==?",
 	"prop": "What are the properties of the ==?",
-	"itis": "What is the ==?"
+	"itis": "What is the ==?",
+	"pt": "What are the parts/type of ==?"
 }
 
 def question_gen(acronym: str, line_topic: str, answer: str):
-	return acronyms_que[acronym].replace("==", line_topic)
+	return acronyms_que[acronym].replace("==", line_topic) #. replace("~~", answer)
 
 # Topic types
 # - cycle -> part/step
@@ -45,10 +52,15 @@ test_str = """
 2. Mantle
 	- thickest part, biggest volume
 	- covers the **core** and lies beneath the **crust**
-	- 2 parts of Mantle
+	- pt; Parts of Mantle <- acts as a brancher/splitter
 		- 2.1. outermost mantle
 			- wcf; asthenosphere
 			- cool, strong, and hard (solid)
+			- pt; Parts of Mantle <- acts as a brancher/splitter
+				- 2.1.1. asthenosphere
+					- wcf; lava
+				- 2.1.2. lavanosphere
+					- wcf; magma
 		- 2.2. innermost mantle
 			- itis; hot, rock is not stable, soft,
 			- prop; plastic, **magmatic**, viscous
@@ -64,12 +76,39 @@ def anki_card(topic, front, back):
 
 
 with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
+	
+	children_outlines = {}  # the key will be the brancher title : and the value will be the first childs
+	
+	# pre outlining
+	for line in md_file:
+	
+		
+
+		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
+		if linetopic_tst:
+			linetopic_numbering = linetopic_tst[1]
+			linetopic = linetopic_tst[2]
+			if inside_branch:
+				children_outlines[brancher_title].append(linetopic_tst[0])
+
+		brancher_tst = re.search(r"pt; (.*)", line)
+		if not brancher_tst:
+			continue
+
+		# inside_branch = True
+		current_branch_linetopic_numbering = linetopic_numbering
+
+		brancher_title = brancher_tst[1]
+
+		children_outlines[brancher_title] = []
+	
+
 	depth = 0
 
 	for line in test_str.split("\n"):
 	# for line in md_file:
 		
-		if "> [!source-image]" in line:
+		if any((ignore in line) for ignore in ignore_line_list):
 			continue
 
 		topic_tst = re.search(r"#+ [!*]*((?:\d\.)+\s)?(.+)(?<!\*)", line)  # -> main heading
@@ -91,10 +130,19 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 			acronym_test = re.search(r"- (.{1,10});", line)  # -> "- com;"
 			if acronym_test:
 				acronym = acronym_test[1]
-				answer_test = re.search(r"- .{1,10}; (.*)", line)   # -> "iron, alloy, and nickel"
+				answer_test = re.search(r"- .{1,10}; (.*)", line)   # -> "iron, alloy, and nickel", can also be the title of the brancher
+				answer = answer_test[1]
+				
 				if answer_test:
-					answer = answer_test[1]
-					front = question_gen(acronym, linetopic, answer)
+
+					# special properties
+					if acronym == "pt":
+						brancher_title = answer
+						depth += 1
+
+
+					else:
+						front = question_gen(acronym, linetopic, answer)
 				
 					anki_card(topic, front, answer)
 			else: # default acronym
