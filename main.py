@@ -1,3 +1,74 @@
+import pprint
+
+class TopicMap():
+	def __init__(self):
+		self.topic_map = {
+			"h1" : [1, ""],
+			"h2" : [2, ""],
+			"h3" : [3, ""],
+			"h4" : [4, ""],
+			"h5" : [5, ""],
+			"h6" : [6, ""],
+			"h7" : [7, ""], # linetopic
+		}
+
+		self._get_maplist()
+		self._get_headerlist()
+
+	def clean_heading_heirarchy(self, heading_heirarchy: str) -> str:
+		header_tst = re.search(r"(#+)", heading_heirarchy)
+		if header_tst:
+			hash_count = heading_heirarchy.count("#")
+
+			return f"h{hash_count}"
+		# else: #  currently there is no other topic type to look out except "linetopic"
+			# return "linetopic"
+
+	def _get_maplist(self):
+		self.maplist = [val for val in self.topic_map.values() if val]
+
+	def _get_headerlist(self):
+		self.headerlist = [self.topic_map[val][1] for val in ["h1", "h2", "h3", "h4", "h5", "h6"] if self.topic_map[val][1]]
+		print(f"headerlist: {self.headerlist}")
+
+	def __getitem__(self, heirarchy_index):
+		if heirarchy_index == -1: # linetopic
+			return self.topic_map["h7"][1]
+		elif heirarchy_index == -2: # lowest header
+			return self.get_lowest_header()
+		elif heirarchy_index == -3: # second lowest header
+			return self.get_highest_header()
+
+	def get_highest_header(self):
+		self._get_headerlist()
+		return self.headerlist[0]
+
+	def get_lowest_header(self):
+		self._get_headerlist()
+		return self.headerlist[-1]
+
+	def add(self, string, heading_heirarchy: str):
+		self._get_maplist()
+		print(self.maplist)
+
+		equivalent_h_h = self.clean_heading_heirarchy(heading_heirarchy)
+
+		self.check_for_override_the_parent_header(equivalent_h_h)
+
+		self.topic_map[equivalent_h_h][1] = string
+		
+	def clear_allchild_of_header(self, header: int):
+		for item in self.topic_map:
+			value = self.topic_map[item]
+			if value[0] > header:
+				self.topic_map[item][1] = ""
+
+	def check_for_override_the_parent_header(self, equivalent_h_h):
+		print(equivalent_h_h)
+		if self.topic_map[equivalent_h_h][1]:
+			self.clear_allchild_of_header(self.topic_map[equivalent_h_h][0])
+
+
 # Compromises
 # - any image will be ignored
 
@@ -10,6 +81,8 @@
 # - itis   -> it is \the   (default)
 # - 
 
+pp = pprint.PrettyPrinter(indent=4)
+
 ignore_line_list = [
 	"> [!source-image]"
 ]
@@ -21,6 +94,7 @@ acronyms_sub = {
 	"wcf": "where we can find",
 	"prop": "properties",
 	"itis": "it is the",
+	"ithas": "it has",
 	"pt": "parts of"
 }
 
@@ -32,7 +106,8 @@ acronyms_que = {
 	"wcf": "What we can find in the ==?",
 	"prop": "What are the properties of the ==?",
 	"itis": "What is the ==?",
-	"pt": "What are the parts/type of ==?"
+	"ithas": "What is in the ==?",
+	"pt": "What are the ==?", # -> the part of is in the linetopic title
 }
 
 def question_gen(acronym: str, line_topic: str, answer: str):
@@ -47,24 +122,29 @@ import fileinput
 import re
 
 
-test_str = """
 ### 1. Geosphere
-2. Mantle
-	- thickest part, biggest volume
-	- covers the **core** and lies beneath the **crust**
-	- pt; Parts of Mantle <- acts as a brancher/splitter
-		- 2.1. outermost mantle
-			- wcf; asthenosphere
-			- cool, strong, and hard (solid)
-			- pt; Parts of Mantle <- acts as a brancher/splitter
-				- 2.1.1. asthenosphere
-					- wcf; lava
-				- 2.1.2. lavanosphere
-					- wcf; magma
-		- 2.2. innermost mantle
-			- itis; hot, rock is not stable, soft,
-			- prop; plastic, **magmatic**, viscous
+test_str = """
+## **How Earth Support Life?**
+#### 1. Atmosphere   
+> [!source-image]-
+![[Pasted image 20220906103344.png]]
+- ithas; **oxygen** on the atmosphere by *plants* and *trees*
+- ithas; **smaller presence** of *carbon dioxide* - useful to moderate planets *temperature*, absorbed by *plants*
+- ithas; **atmosphere** is thick enough to prevent poisonous rays of *radiation*, acts as *filter*
+
+#### 2. Climate  
+> [!source-image]-
+![[Pasted image 20220906103738.png]]
+- **moderate** amount of *carbon dioxide* in the atmosphere
+- does not go to *extreme* frequentlyEarth
+- itis; **3rd** planet from the sun and the **largest** terrestrial planet
+- itis; only planet that **supports life**
 """
+
+# make it: 
+# what is the **3rd planet from the sun and the **largest** terrestrial planet
+# ==Earth== planet from the sun and the **largest** terrestrial planet 
+
 
 def anki_card(topic, front, back):
 	print("======================================")
@@ -78,51 +158,79 @@ def anki_card(topic, front, back):
 with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 	
 	children_outlines = {}  # the key will be the brancher title : and the value will be the first childs
-	
+	# current_outline_ch = {}
+
+
 	# pre outlining
-	for line in md_file:
-	
-		
+	brancher_map = []
+	inside_branch = False
+	depth = 0
+	# for line in md_file:
+	for line in test_str.split("\n"):
+
+		# current_outline = current_outline_ch if current_outline_ch else children_outlines
 
 		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
 		if linetopic_tst:
 			linetopic_numbering = linetopic_tst[1]
 			linetopic = linetopic_tst[2]
 			if inside_branch:
-				children_outlines[brancher_title].append(linetopic_tst[0])
+
+				if linetopic_numbering.count(".") < previous_linetopic_numbering.count("."):
+					# depth -= 1
+					brancher_map.pop()
+
+				# children_outlines[brancher_title][linetopic_numbering[:-2]] = []
+				children_outlines[brancher_map[-1]].append(linetopic)
+				# if linetopic_numbering.count(".") > previous_linetopic_numbering.count("."):
+
+		
+			previous_linetopic_numbering = linetopic_numbering
 
 		brancher_tst = re.search(r"pt; (.*)", line)
 		if not brancher_tst:
 			continue
 
-		# inside_branch = True
-		current_branch_linetopic_numbering = linetopic_numbering
+		inside_branch = True
 
 		brancher_title = brancher_tst[1]
+		brancher_map.append(brancher_title)
 
 		children_outlines[brancher_title] = []
-	
 
+	pp.pprint(children_outlines)
+
+	# exit()
+
+with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
+	# card creation
 	depth = 0
 
+	topic_map = TopicMap()
+
+	topic = ""
+	linetopic = ""
 	for line in test_str.split("\n"):
 	# for line in md_file:
 		
 		if any((ignore in line) for ignore in ignore_line_list):
 			continue
 
-		topic_tst = re.search(r"#+ [!*]*((?:\d\.)+\s)?(.+)(?<!\*)", line)  # -> main heading
+		topic_tst = re.search(r"(#+) [!*]*((?:\d\.)+\s)?(.+)(?<!\*)", line)  # -> main heading
 		if topic_tst:
-			topic_numbering = topic_tst[1]
-			topic = topic_tst[2]
-			depth += 1
+			# topic_numbering = topic_tst[2]
+			# topic = topic_tst[3]
+			hash_num = topic_tst[1]
+			topic_map.add(topic_tst[3], hash_num)
+			# depth += 1
 			continue
 		
 		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
 		if linetopic_tst:
-			linetopic_numbering = linetopic_tst[1]
-			linetopic = linetopic_tst[2]
-			depth += 1
+			# linetopic_numbering = linetopic_tst[1]
+			# linetopic = linetopic_tst[2]
+			topic_map.add(linetopic_tst[2])
+			# depth += 1
 			continue
 
 		bullet_test = re.search(r"- ", line)
@@ -138,13 +246,15 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 					# special properties
 					if acronym == "pt":
 						brancher_title = answer
-						depth += 1
-
+						# depth += 1
+						answer = " - " + "\n - ".join(children_outlines[brancher_title])
+						
+						front = question_gen(acronym, brancher_title, answer)
 
 					else:
-						front = question_gen(acronym, linetopic, answer)
+						front = question_gen(acronym, topic_map[-1], answer)
 				
-					anki_card(topic, front, answer)
+					anki_card(topic_map[-2], front, answer)
 			else: # default acronym
 				fact = re.search(r"- (.*)", line)[1]
 
@@ -160,7 +270,7 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 					answer = linetopic
 					question = question_gen(acronym, fact, answer)
 
-				anki_card(topic, question, answer)
+				anki_card(topic_map[-2], question, answer)
 
 					
 

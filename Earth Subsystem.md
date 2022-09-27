@@ -2,9 +2,10 @@
 # Earth Subsystem   
 > [!source-image]-
 ![[Pasted image 20220906103310.png]]
-- Earth
-	- itis; **3rd** planet from the sun and the **largest** terrestrial planet
-	- itis; only planet that **supports life**
+
+### Earth
+- itis; **3rd** planet from the sun and the **largest** terrestrial planet
+- itis; only planet that **supports life**
 
 ## **How Earth Support Life?**
 #### 1. Atmosphere   
