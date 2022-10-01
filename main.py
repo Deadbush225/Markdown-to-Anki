@@ -121,11 +121,12 @@ acronyms_sub = {
 	"ithas": "it has",
 	"has":"has",
 	"ff": "fun fact",
-	"pt": "parts of"
+	"pt": "parts of",
+	"wh" : "where == happens",
 }
 
 # warning: answer is deprecated
-# == is for the topic, and ~~ is for the answer, and __ is for the blanked_fact
+# == is for the topic, and ~~ is for the fact, and __ is for the blanked_fact
 # the first item in the list is the nonblanked question while the second item is the blanked question
 acronyms_que = {
 	"thi": ["How thick is the ==?", "thi - NaN"],
@@ -133,12 +134,13 @@ acronyms_que = {
 	"mofs": ["== is made up off what?", "== is made up of: \n\n __"],
 	"wcf": ["What we can find in the ==?", "wcf - NaN"],
 	"prop": ["What are the properties of the ==?", "The properties of == are: \n\n __"],
-	"it": ["What is the ==?", "== __"], 
+	"it": ["The == is?", "== __"], 
 	"itis": ["What is the ==?", "== is the __"],
 	"has": ["has __", "has - NaN"],
 	"ff": ["Fun fact: __", "ff - NaN"],
 	"ithas": ["it has __?", "it has - NaN"],
 	"pt": ["What are the parts of ==?", "== have parts which are: \n\n __"], # -> the part of is in the linetopic title
+	"wh" : ["Where the ~~ happens"]
 }
 
 def fact_blanker(fact):
@@ -149,7 +151,7 @@ def fact_blanker(fact):
 	else:
 		return
 
-def question_gen(acronym: str, line_topic: str, blanked_fact="__", question_type=0):
+def question_gen(acronym: str, line_topic: str, fact, blanked_fact="__", question_type=0):
 	"""Generate question for the front
 
 	Args:
@@ -159,14 +161,18 @@ def question_gen(acronym: str, line_topic: str, blanked_fact="__", question_type
 		question_type (int, optional): 0 for non-blank mode, 1 for blanked mode. Defaults to 0.
 
 	Returns:
-		_type_: _description_
+		list: [0] => question [1] => answer
 	"""
 	
 	# warning: answer is deprecated
 	blanked_fact = blanked_fact.strip()
 	line_topic = line_topic.strip()
+
+	question = acronyms_que[acronym][question_type]
+
+	answer = line_topic if "~~" in question else fact # -> topic will be the answer if the quesion contains ~~
 	
-	return acronyms_que[acronym][question_type].replace("==", line_topic).replace("__", blanked_fact) #.replace("~~", answer)
+	return question.replace("==", line_topic).replace("__", blanked_fact).replace("~~", fact), answer
 #change the way of questioning
 
 
@@ -182,33 +188,17 @@ import re
 
 ### 1. Geosphere
 test_str = """
-## Subsystems of the Earth
-#### 1. Geosphere 
-> [!source-image]-
-![[Pasted image 20220906104440.png]]
-##### Consists of 3 major layers
-> [!source-image]-
-![[Pasted image 20220906104507.png]]
-1. Core
-	- com; heavy metals
-	- 1.1. Outer Core
-		- thi; 1400 miles thick
-		- com; iron, alloy, and nickel
-	- 1.1. Inner Core
-		- thi; 750 miles thick
-		- com; made up of primary iron
+##### **Layers of Atmosphere**
+> [!source-image]+
+![[Pasted image 20220906105712.png]]
 
+###### 1. Troposphere
 > [!source-image]-
-![[Pasted image 20220906104532.png]]
-2. Mantle
-	- itis; thickest part, biggest volume
-	- it; covers **core** and lies beneath the **crust**
-	- 2.1. outermost mantle
-		- wcf; asthenosphere
-		- cool, strong, and hard (solid)
-	- 2.2. innermost mantle
-		- itis; hot, rock is not stable, soft,
-		- prop; plastic, **magmatic**, viscous
+![[Pasted image 20220906105715.png]]
+- thi; **10** km
+- wh; Formation of weather
+- Jet stream - fast flowing narrow, meandering air currents
+- Tropopause - border to stratosphere
 """
 
 # make it: 
@@ -333,7 +323,7 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 			if acronym_test:
 				acronym = acronym_test[2]
 				# line = acronym_test[2]
-				answer = acronym_test[3]
+				fact = acronym_test[3]
 				# answer_test = re.search(r".{1,10}; (.*)", line)   # -> "iron, alloy, and nickel", can also be the title of the brancher
 				# answer = answer_test[1]
 				
@@ -343,50 +333,53 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 
 				# special properties
 				if acronym == "pt": # -> blank no support
-					brancher_title = answer
+					brancher_title = fact
 					# depth += 1
 					answer = " - " + "\n - ".join(children_outlines[brancher_title])
 					front = question_gen(acronym, brancher_title)
 
-					continue
+					# continue
 
 				elif acronym == "mofs":
-					brancher_title = answer
+					brancher_title = fact
 
-					answer = " - " + "\n - ".join(children_outlines[brancher_title])
+					fact = " - " + "\n - ".join(children_outlines[brancher_title])
 
-					is_blankable = fact_blanker(answer)
+					is_blankable = fact_blanker(fact)
 					if is_blankable:
 						blanked_fact, answer = is_blankable
-						front = question_gen(acronym, topic_map[-1], blanked_fact=blanked_fact, question_type=1)
+						front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
 					else:
-						front = question_gen(acronym, topic_map[-1])
+						front, answer = question_gen(acronym, topic_map[-1], fact)
 
 				# elif acronym == "ithas":
 					# front = question_gen(acronym, topic_map[-1], answer, blanked_fact)
 				else:
 					# acronym = "itis"
-					is_blankable = fact_blanker(answer)
+					is_blankable = fact_blanker(fact)
 					if is_blankable:
 						blanked_fact, answer = is_blankable
-						front = question_gen(acronym, topic_map[-1], blanked_fact=blanked_fact, question_type=1)
+						front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
 					else:
-						front = question_gen(acronym, topic_map[-1])
+						front, answer = question_gen(acronym, topic_map[-1], fact)
 				# front = question_gen(acronym, topic_map[-1], answer)
-
+			else:
+				front, answer = question_gen("itis", topic_map[-1], fact)
 			# acronym = "itis"
-			if re.search(r"\*.*\*", line): # emphasis check
-				# blanked_fact = re.sub(r"(\*?\*[\w\s]+\*\*?)", "___________", fact)
-				answer_to_the_blanked = re.findall(r"(\*?\*[\w\s]+\*\*?)", fact)
-				# answer = ", ".join(blanked)
+			#->
+			# if re.search(r"\*.*\*", line): # emphasis check
+			# 	# blanked_fact = re.sub(r"(\*?\*[\w\s]+\*\*?)", "___________", fact)
+			# 	answer_to_the_blanked = re.findall(r"(\*?\*[\w\s]+\*\*?)", fact)
+			# 	# answer = ", ".join(blanked)
 
-				for answer in answer_to_the_blanked:
-					blanked_fact = line.replace(answer, "___________")
+			# 	for answer in answer_to_the_blanked:
+			# 		blanked_fact = line.replace(answer, "___________")
 
-					front = question_gen(acronym, topic_map[-1], blanked_fact=blanked_fact)
-					anki_card(topic_map.get_topic_map_string(), front, answer)
+			# 		front = question_gen(acronym, topic_map[-1], blanked_fact=blanked_fact)
+			# 		anki_card(topic_map.get_topic_map_string(), front, answer)
 
-				continue
+			# 	continue
+			#->
 				
 
 				# question = question_gen(acronym, blanked_fact, answer)

@@ -108,7 +108,7 @@
 	- **78**% Nitrogen
 	- **21**% Oxygen
 	- **1**% other gases
-- acts as blanket for temperature regulation/filter against the radiation from the sun
+- acts as **blanket** for temperature regulation/filter against the radiation from the **sun**
 
 ##### **Layers of Atmosphere**
 > [!source-image]+
@@ -117,8 +117,8 @@
 ###### 1. Troposphere
 > [!source-image]-
 ![[Pasted image 20220906105715.png]]
-- 10 km
-- Formation of weather
+- thi; **10** km
+- wh; Formation of weather
 - Jet stream - fast flowing narrow, meandering air currents
 - Tropopause - border to stratosphere
 
