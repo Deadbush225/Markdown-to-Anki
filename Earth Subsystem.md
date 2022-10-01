@@ -48,7 +48,7 @@
 > [!source-image]-
 ![[Pasted image 20220906104507.png]]
 1. Core
-	- mat; heavy metals
+	- com; heavy metals
 	- 1.1. Outer Core
 		- thi; 1400 miles thick
 		- com; iron, alloy, and nickel
@@ -60,7 +60,7 @@
 ![[Pasted image 20220906104532.png]]
 2. Mantle
 	- itis; thickest part, biggest volume
-	- covers **core** and lies beneath the **crust**
+	- it; covers **core** and lies beneath the **crust**
 	- 2.1. outermost mantle
 		- wcf; asthenosphere
 		- cool, strong, and hard (solid)
@@ -78,23 +78,23 @@
 > [!source-image]-
 ![[Pasted image 20220906104830.png]]
 - itis; liquid water component
-- ocean makes 71% of Earth, (97.5% saltwater, 2.5% freshwater)
+- ff; ocean makes **71**% of Earth, (**97.5**% saltwater, **2.5**% freshwater)
 > [!source-image]-
 ![[Pasted image 20220906105020.png]]
-- 1.8% of Earths water is frozen in glacier
-	- glaciers covers 10% of land surface today 
+- **1.8**% of Earths water is frozen in glacier
+	- glaciers covers **10**% of land surface today 
 
 ##### Water Cycle
 > [!source-image]-
 ![[Pasted image 20220906105225.png]]
 1. Evaporation/(Transpiration if from plants)
-	- water to water vapor
+	- water to **water vapor**
 2. Condensation
-	- water vapor grouped in a cloud
+	- water vapor grouped in a **cloud**
 3. Precipitation
-	- water vapor to liquid
+	- water vapor to **liquid**
 
-##### **Freshwater**
+##### src; **Freshwater**
 > [!source-image]-
 ![[Pasted image 20220906105501.png]]
 - Lake
@@ -104,9 +104,10 @@
 #### 3. Atmosphere
 > [!source-image]-
 ![[Pasted image 20220906105537.png]]
-- 78% Nitrogen
-- 21% Oxygen
-- 1% other gases
+- mofs; 
+	- **78**% Nitrogen
+	- **21**% Oxygen
+	- **1**% other gases
 - acts as blanket for temperature regulation/filter against the radiation from the sun
 
 ##### **Layers of Atmosphere**
