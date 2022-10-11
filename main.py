@@ -1,7 +1,7 @@
 import pprint
 from helpers import *
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter()
 
 # Topic types
 # - cycle -> part/step
@@ -31,58 +31,130 @@ test_str = """
 # what is the **3rd planet from the sun and the **largest** terrestrial planet
 # ==Earth== planet from the sun and the **largest** terrestrial planet 
 
-with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
+mdfile = r"D:\Obsidian Vault\School Notes\Introduction to Philosophy\A. Intro to Philosophy.md"
+
+with open(mdfile, encoding="utf-8") as md_file:
 	
 	children_outlines = {}  # the key will be the brancher title : and the value will be the first childs
 	# current_outline_ch = {}
 
+	md_file = md_file.readlines()
 
 	# pre outlining
 	brancher_map = []
 	inside_branch = False
 	depth = 0
-	# for line in md_file:
-	for line in test_str.split("\n"):
+	line_no = 0
+	# for line in test_str.split("\n"):
+	for line in md_file:
+		line_no += 1
 
-		brancher_tst = re.search(r"(mofs|pt|scr); (.*)", line)
+		brancher_tst = re.search(r"(.*) (mofs|pt|kd|cyc|st); (.*)", line) #acronym
 		if brancher_tst:
-			# continue
-			# pass
+			if brancher_tst[2]:
+				# continue
+				# pass
 
-			# inside_branch = True
+				# inside_branch = True
 
-			brancher_title = brancher_tst[2]
-			brancher_map.append(brancher_title)
+				# -> scope detector
+				start_line_no = line_no
 
-			children_outlines[brancher_title] = []
+				scope_to_find = brancher_tst[1]
+				brancher_title = brancher_tst[3]
+				brancher_map.append(brancher_title)
+
+				starting_scope = Topic(brancher_title, scope_to_find)
+
+				children_outlines[brancher_title] = []
+
+				done = False
+				phantom_line_no = line_no
+				while not done:
+
+					# need to check if it is a member of the topic heirarchy
+					topic_test = re.search(r"^([ 	]*-|#+)\s(.*)", md_file[phantom_line_no])
+					
+					if topic_test:
+						possible_end_scope = Topic(topic_test[2], topic_test[1])
+
+						if starting_scope <= possible_end_scope:
+							done = True
+							end_line_no = phantom_line_no - 1
+
+					if not phantom_line_no + 1 == len(md_file):
+						phantom_line_no += 1
+					else:
+						done = True
+						end_line_no = phantom_line_no
+					# and if it is, compare it to the starting scope. If it is lower that [sc], ignore, else if it is higher make it the ending scope
+
+					# if md_file[phantom_line_no].startswith(scope_to_find + " "):# test for the end scope:
+					# 	done = True
+					# 	end_line_no = phantom_line_no - 1 # don't include the endline
+						# save end line no then, return the str or range
+
+
+				# -> first children detector
+				first_children_found = False
+				for i in range(start_line_no, end_line_no+1):
+					line = md_file[i]
+					
+					if not first_children_found:
+						children_test = re.search(r"^([	 ]*[#-]+ )(.*)", line)
+						
+						if children_test:
+							first_children = children_test[1] # -> "### " or "- "
+							first_children_top = children_test[2]
+							first_children_found = True
+							first_children_topic = Topic(first_children_top, first_children)
+
+						else:
+							continue
+						#todo: use case if children_test is not found
+					
+					topic_test = re.search(r"^([ 	]*-|#+)\s(.*)", line)
+
+					if topic_test:
+						possible_first_child_topic = Topic(topic_test[2], topic_test[1])
+					# if line.startswith(first_children):
+						if first_children_topic == possible_first_child_topic:
+							children_outlines[brancher_title].append(line)
+						elif first_children_topic < possible_first_child_topic:
+							break
+				
 
 		# current_outline = current_outline_ch if current_outline_ch else children_outlines
 		# -> numbering
-		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
-		if linetopic_tst:
-			linetopic_numbering = linetopic_tst[1]
-			linetopic = linetopic_tst[2]
-			if inside_branch:
+		# linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
+		# if linetopic_tst:
+		# 	linetopic_numbering = linetopic_tst[1]
+		# 	linetopic = linetopic_tst[2]
+		# 	if inside_branch:
 
-				if linetopic_numbering.count(".") < previous_linetopic_numbering.count("."):
-					# depth -= 1
-					brancher_map.pop()
+		# 		if linetopic_numbering.count(".") < previous_linetopic_numbering.count("."):
+		# 			# depth -= 1
+		# 			brancher_map.pop()
 
-				# children_outlines[brancher_title][linetopic_numbering[:-2]] = []
-				children_outlines[brancher_map[-1]].append(linetopic)
-				# if linetopic_numbering.count(".") > previous_linetopic_numbering.count("."):
+		# 		# children_outlines[brancher_title][linetopic_numbering[:-2]] = []
+		# 		children_outlines[brancher_map[-1]].append(linetopic)
+		# 		# if linetopic_numbering.count(".") > previous_linetopic_numbering.count("."):
 
 		
-			previous_linetopic_numbering = linetopic_numbering
+		# 	previous_linetopic_numbering = linetopic_numbering
 
-		else:
-			if brancher_map:
-				indent_check = re.search(r"^(\s)- (.*)", line)
-				if indent_check:
-					depth = indent_check[1].replace("\t", "    ")
-					fact = indent_check[2]
+		# else:
+		# 	if brancher_map:				
 
-					children_outlines[brancher_map[-1]].append(fact)
+		# 		indent_check = re.search(r"^(\s*)- (.*)", line)
+		# 		if indent_check:
+		# 			previous_depth = indent_check[1].replace("\t", "    ")
+		# 			fact = indent_check[2]
+
+		# 			children_outlines[brancher_map[-1]].append(fact)
+		# ->
+
+
 
 		# brancher_tst = re.search(r"(mofs|pt|scr); (.*)", line)
 		# if not brancher_tst:
@@ -97,9 +169,9 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 
 	pp.pprint(children_outlines)
 
-	# exit()
+	exit()
 
-with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
+with fileinput.input(mdfile, encoding="utf-8") as md_file:
 	# card creation
 	depth = 0
 
@@ -107,10 +179,15 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 
 	topic = ""
 	linetopic = ""
-	for line in test_str.split("\n"):
-	# for line in md_file:
+	# for line in test_str.split("\n"):
+	for line in md_file:
 		
 		if any((ignore in line) for ignore in ignore_line_list):
+			continue
+
+		callout_topic_tst = re.search(r"^(?:\s*> \[!(info)\]).\s*(.*)", line)
+		if callout_topic_tst:
+			topic_map.add(callout_topic_tst[2] if callout_topic_tst[2] else callout_topic_tst[1], "h7")
 			continue
 
 		topic_tst = re.search(r"(#+) [!*]*((?:\d\.)+\s)?(.+)(?<!\*)", line)  # -> main heading
@@ -120,7 +197,10 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 			hash_num = topic_tst[1]
 			topic_map.add(topic_tst[3], hash_num)
 			# depth += 1
-			continue
+
+			
+
+			# continue
 		
 		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
 		if linetopic_tst:
@@ -130,10 +210,10 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 			# depth += 1
 			continue
 
-		bullet_test = re.search(r"- ", line)
+		bullet_test = re.search(r"^(\s*-\s*)", line)
 		if bullet_test:
 
-			fact = re.search(r"^(?:\s*(-|#+)) (?:.*;)?(.*)", line)[2] # the whole fact after the dash (-)
+			fact = re.search(r"^(\s*>)?(?:\s*(-|#+)) (?:.*;)?(.*)", line)[3] # the whole fact after the dash (-)
 			
 			# [implied acronym] - td
 			inline_term_def_test = re.search(r"(?:-\s)?(.+)[ ]+-[ ]+(.+)", fact)
@@ -152,8 +232,8 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 					front, answer = question_gen("td", topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
 				else:
 					front, answer = question_gen("td", topic_map[-1], fact)
-
-
+				
+				topic_map.clear_allchild_of_header_including_the_header("h8")
 
 			else:
 				acronym_test = re.search(r"^(?:\s*(-|#+)) (.{1,10});\s*(.*)\s*", line)  # -> "- com;"
@@ -169,12 +249,11 @@ with fileinput.input("Earth Subsystem.md", encoding="utf-8") as md_file:
 					
 
 					# special properties
-					if acronym == "pt": # -> blank no support
+					if acronym in ["pt", "kd", "cyc", "st"]: # -> blank no support
 						brancher_title = fact
 						# depth += 1
 						answer = " - " + "\n - ".join(children_outlines[brancher_title])
-						front = question_gen(acronym, brancher_title)
-
+						front = question_gen(acronym, brancher_title, fact)
 						# continue
 
 					elif acronym == "mofs":

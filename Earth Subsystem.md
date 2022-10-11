@@ -12,7 +12,7 @@
 > [!source-image]-
 ![[Pasted image 20220906103344.png]]
 - **oxygen** on the atmosphere by *plants* and *trees*
-- **smaller presence** of *carbon dioxide* - useful to moderate planets *temperature*, absorbed by *plants*
+- **smaller presence** of *carbon dioxide* useful to moderate planets *temperature*, absorbed by *plants*
 - **atmosphere** is thick enough to prevent poisonous rays of *radiation*, acts as *filter*
 
 #### 2. Climate  
