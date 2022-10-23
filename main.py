@@ -27,6 +27,52 @@ test_str = """
 - Tropopause - border to stratosphere
 """
 
+import genanki
+import random
+
+def anki_card(topic, front, back):
+	global my_model
+	global my_deck
+
+	print("======================================")
+	print(f"> {topic}\n")
+	print(front)
+	print("--------------fliped------------------")	
+	print(back)
+	print("======================================")
+
+	my_note = genanki.Note( # 1. contains the fact need to memorize, can contain 1+ card/s
+	model=my_model,
+	fields=[front, back])
+
+	my_deck.add_note(my_note) # 3.1 adding note to a deck
+
+def initializeAnkiDeck():
+	global my_model
+	global my_deck
+
+	model_no = random.randrange(1 << 30, 1 << 31)
+
+	my_model = genanki.Model( # 2. defines the fields and cards for a type of "Note"
+	model_no,
+	'Example',
+	fields=[ # fields acts as a parameter, and this model as a function
+		{'name': 'Question'},
+		{'name': 'Answer'},
+	],
+	templates=[
+		{
+		'name': 'Card 1',
+		'qfmt': '{{Question}}<br>',
+		'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+		},
+	])
+
+
+	my_deck = genanki.Deck( # 3. to import your notes into Anki, you need to add them to a "Deck"
+	model_no,
+	'Example')
+
 # make it: 
 # what is the **3rd planet from the sun and the **largest** terrestrial planet
 # ==Earth== planet from the sun and the **largest** terrestrial planet 
@@ -73,7 +119,7 @@ with open(mdfile, encoding="utf-8") as md_file:
 				while not done:
 
 					# need to check if it is a member of the topic heirarchy
-					topic_test = re.search(r"^([ 	]*-|#+)\s(.*)", md_file[phantom_line_no])
+					topic_test = re.search(r"^([ 	]*[#\-\d.]+ )(.*)", md_file[phantom_line_no])
 					
 					if topic_test:
 						possible_end_scope = Topic(topic_test[2], topic_test[1])
@@ -101,7 +147,7 @@ with open(mdfile, encoding="utf-8") as md_file:
 					line = md_file[i]
 					
 					if not first_children_found:
-						children_test = re.search(r"^([	 ]*[#-]+ )(.*)", line)
+						children_test = re.search(r"^([	 ]*[#\-\d]+ )(.*)", line)
 						
 						if children_test:
 							first_children = children_test[1] # -> "### " or "- "
@@ -113,7 +159,7 @@ with open(mdfile, encoding="utf-8") as md_file:
 							continue
 						#todo: use case if children_test is not found
 					
-					topic_test = re.search(r"^([ 	]*-|#+)\s(.*)", line)
+					topic_test = re.search(r"^([ 	]*[#\-\d]+ )(.*)", line)
 
 					if topic_test:
 						possible_first_child_topic = Topic(topic_test[2], topic_test[1])
@@ -169,7 +215,9 @@ with open(mdfile, encoding="utf-8") as md_file:
 
 	pp.pprint(children_outlines)
 
-	exit()
+	# exit()
+
+initializeAnkiDeck()
 
 with fileinput.input(mdfile, encoding="utf-8") as md_file:
 	# card creation
@@ -199,10 +247,9 @@ with fileinput.input(mdfile, encoding="utf-8") as md_file:
 			# depth += 1
 
 			
-
 			# continue
 		
-		linetopic_tst = re.search(r"(?:- )?((?:\d\.)+) (.+)", line)  # -> "1." & "- 1.1."
+		linetopic_tst = re.search(r"^\s*(?:- )?(?:\*\*)?((?:\d\.)+)?(?:\*\*)(.+)(?:\*\*)", line)  # -> "1." & "- 1.1."
 		if linetopic_tst:
 			# linetopic_numbering = linetopic_tst[1]
 			# linetopic = linetopic_tst[2]
@@ -216,7 +263,7 @@ with fileinput.input(mdfile, encoding="utf-8") as md_file:
 			fact = re.search(r"^(\s*>)?(?:\s*(-|#+)) (?:.*;)?(.*)", line)[3] # the whole fact after the dash (-)
 			
 			# [implied acronym] - td
-			inline_term_def_test = re.search(r"(?:-\s)?(.+)[ ]+-[ ]+(.+)", fact)
+			inline_term_def_test = re.search(r"^(?:-\s+)?(.+)[ ]+-[ ]+(.+)", fact)
 			if inline_term_def_test:
 				topic_map.add(inline_term_def_test[1], "h8") # need to add as a topic because, because it will be used as a last topic below
 
@@ -235,57 +282,60 @@ with fileinput.input(mdfile, encoding="utf-8") as md_file:
 				
 				topic_map.clear_allchild_of_header_including_the_header("h8")
 
-			else:
-				acronym_test = re.search(r"^(?:\s*(-|#+)) (.{1,10});\s*(.*)\s*", line)  # -> "- com;"
-				if acronym_test:
-					acronym = acronym_test[2]
-					# line = acronym_test[2]
-					fact = acronym_test[3]
-					# answer_test = re.search(r".{1,10}; (.*)", line)   # -> "iron, alloy, and nickel", can also be the title of the brancher
-					# answer = answer_test[1]
-					
-					# if answer_test:
-					# question = ""
-					
+			# -> else:
+		acronym_test = re.search(r"^(?:[	 ]*(-|#+))\s+(.{1,10});\s*(.*)\s*", line)  # -> "- com;"
+		if acronym_test:
+			acronym = acronym_test[2]
+			# line = acronym_test[2]
+			fact = acronym_test[3]
+			# answer_test = re.search(r".{1,10}; (.*)", line)   # -> "iron, alloy, and nickel", can also be the title of the brancher
+			# answer = answer_test[1]
+			
+			# if answer_test:
+			# question = ""
+			
 
-					# special properties
-					if acronym in ["pt", "kd", "cyc", "st"]: # -> blank no support
-						brancher_title = fact
-						# depth += 1
-						answer = " - " + "\n - ".join(children_outlines[brancher_title])
-						front = question_gen(acronym, brancher_title, fact)
-						# continue
+			# special properties
+			if acronym in ["pt", "kd", "cyc", "st"]: # -> blank no support
+				brancher_title = fact
+				if bullet_test:
+					topic_map.add(brancher_title, "h7")
+				# depth += 1
+				prop_answer = "\n -> " + "\n -> ".join(children_outlines[brancher_title])
+				front, answer = question_gen(acronym, brancher_title, fact, proposed_answer=prop_answer)
+				# continue
 
-					elif acronym == "mofs":
-						brancher_title = fact
+			elif acronym == "mofs":
+				brancher_title = fact
 
-						fact = " - " + "\n - ".join(children_outlines[brancher_title])
+				fact = " - " + "\n - ".join(children_outlines[brancher_title])
 
-						is_blankable = fact_blanker(fact)
-						if is_blankable:
-							blanked_fact, answer = is_blankable
-							front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
-						else:
-							front, answer = question_gen(acronym, topic_map[-1], fact)
-
-					# elif acronym == "ithas":
-						# front = question_gen(acronym, topic_map[-1], answer, blanked_fact)
-					else:
-						# acronym = "itis"
-						is_blankable = fact_blanker(fact)
-						if is_blankable:
-							blanked_fact, answer = is_blankable
-							front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
-						else:
-							front, answer = question_gen(acronym, topic_map[-1], fact)
-					# front = question_gen(acronym, topic_map[-1], answer)
+				is_blankable = fact_blanker(fact)
+				if is_blankable:
+					blanked_fact, answer = is_blankable
+					front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
 				else:
-					is_blankable = fact_blanker(fact)
-					if is_blankable:
-						blanked_fact, answer = is_blankable
-						front, answer = question_gen("itis", topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
-					else:
-						front, answer = question_gen("itis", topic_map[-1], fact)
+					front, answer = question_gen(acronym, topic_map[-1], fact)
+
+			# elif acronym == "ithas":
+				# front = question_gen(acronym, topic_map[-1], answer, blanked_fact)
+			else:
+				# acronym = "itis"
+				is_blankable = fact_blanker(fact)
+				if is_blankable:
+					blanked_fact, answer = is_blankable
+					front, answer = question_gen(acronym, topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
+				else:
+					front, answer = question_gen(acronym, topic_map[-1], fact)
+			# front = question_gen(acronym, topic_map[-1], answer)
+		else:
+			if "fact" in globals():
+				is_blankable = fact_blanker(fact)
+				if is_blankable:
+					blanked_fact, answer = is_blankable
+					front, answer = question_gen("itis", topic_map[-1], fact, blanked_fact=blanked_fact, question_type=1)
+				else:
+					front, answer = question_gen("itis", topic_map[-1], fact)
 			# acronym = "itis"
 			#->
 			# if re.search(r"\*.*\*", line): # emphasis check
@@ -311,8 +361,10 @@ with fileinput.input(mdfile, encoding="utf-8") as md_file:
 				# question = question_gen(acronym, fact, answer)
 
 			# anki_card(topic_map[-2], question, answer)	
-			
+		if ("front" in globals()) and ("answer" in globals()):
 			anki_card(topic_map.get_topic_map_string(), front, answer)
+		else:
+			print(f"Ignoring line no: {md_file._filelineno}")
 			# front = None
 			# answer = None
 			# else: # default acronym
@@ -337,34 +389,7 @@ with fileinput.input(mdfile, encoding="utf-8") as md_file:
 
 # --- #
 
-# import genanki
+my_package = genanki.Package(my_deck) # 4. Then, create a "Package" for your "Deck" and write it to a file
+my_package.media_files = ['test.png']
 
-# my_model = genanki.Model( # 2. defines the fields and cards for a type of "Note"
-#   1380120064,
-#   'Example',
-#   fields=[ # fields acts as a parameter, and this model as a function
-#     {'name': 'Object'},
-#     {'name': 'Image'},
-#   ],
-#   templates=[
-#     {
-#       'name': 'Card 1',
-#       'qfmt': '{{Object}}<br>{{Image}}',
-#       'afmt': '{{FrontSide}}<hr id="answer">{{Image}}',
-#     },
-#   ])
-
-# my_note = genanki.Note( # 1. contains the fact need to memorize, can contain 1+ card/s
-#   model=my_model,
-#   fields=['JPEG File', '<img src="test.png">'])
-
-# my_deck = genanki.Deck( # 3. to import your notes into Anki, you need to add them to a "Deck"
-#   2059400191,
-#   'Example')
-
-# my_deck.add_note(my_note) # 3.1 adding note to a deck
-
-# my_package = genanki.Package(my_deck) # 4. Then, create a "Package" for your "Deck" and write it to a file
-# my_package.media_files = ['test.png']
-
-# my_package.write_to_file('output.apkg')
+my_package.write_to_file('output.apkg')

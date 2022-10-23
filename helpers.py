@@ -46,30 +46,32 @@ acronyms_sub = {
 #todo: the third item is fact as question, something like in the "wh"
 #todo: use symbols such as "->" as much as possible
 acronyms_que = {
-	"thi": ["How thick is the ==?", "The == is __ thick", "It is ~~ thick"],
-	"com": ["== is composed of what?", "== is made up of: \n\n __", "It is made up of ~~"],
-	"mofs": ["== is made up off what?", "== is made up of: \n\n __", "It is made up of ~~"],
-	"wcf": ["What we can find in the ==?", "We can find the __ in the ==", "Where we can find ~~"],
-	"prop": ["What are the properties of the ==?", "The properties of == are: \n\n __", "It's properties is ~~"],
-	"it": ["The == is?", "== __", "It ~~"], 
-	"itis": ["What is the ==?", "== is the __", "It is ~~"],
-	"has": ["== has?", "has __", "It has ~~"],
-	"ff": ["ff - NaN", "Fun fact: __", "[ff] - NaN"],
-	"ithas": ["== has?", "it has __?", "It has ~~"],
-	"pt": ["What are the parts of ==?", "== have parts which are: \n\n __", "It have parts which are: ~~"], # -> the part of is in the linetopic title
-	"kd": ["What are the kinds of ==?", "== have kinds which are: \n\n __", "It have kinds which are: ~~"], # -> the part of is in the linetopic title
-	"cyc": ["What are the clycle of ==?", "== have cycle which are: \n\n __", "It have cycle which are: ~~"], # -> the part of is in the linetopic title
-	"st": ["What are the steps of ==?", "== have steps which are: \n\n __", "It have steps which are: ~~"], # -> the part of is in the linetopic title
-	"wh" : ["What happens in ==?", "__ happens in the ==", "Where the ~~ happens"],
+	"thi": [1, "How thick is the ==?", "The == is __ thick", "It is ~~ thick"],
+	"com": [2, "== is composed of what?", "== is made up of: \n\n __", "It is made up of ~~"],
+	"mofs": [2, "== is made up off what?", "== is made up of: \n\n __", "It is made up of ~~"],
+	"wcf": [3, "What we can find in the ==?", "We can find the __ in the ==", "Where we can find ~~"],
+	"prop": [1, "What are the properties of the ==?", "The properties of == are: \n\n __", "It's properties is ~~"],
+	"it": [3, "The == is?", "== __", "It ~~"], 
+	"itis": [3, "What is the ==?", "== is the __?", "It is ~~"],
+	"has": [1, "== has?", "has __", "It has ~~"],
+	"ff": [2, "ff - NaN", "Fun fact: __", "[ff] - NaN"],
+	"ithas": [1, "== has?", "it has __?", "It has ~~"],
+	"pt": [1, "What are the parts of ==?", "== have parts which are: \n\n __", "It have parts which are: ~~"], # -> the part of is in the linetopic title
+	"kd": [1, "What are the kinds of ==?", "== have kinds which are: \n\n __", "It have kinds which are: ~~"], # -> the part of is in the linetopic title
+	"cyc": [1, "What are the clycle of ==?", "== have cycle which are: \n\n __", "It have cycle which are: ~~"], # -> the part of is in the linetopic title
+	"st": [1, "What are the steps of ==?", "== have steps which are: \n\n __", "It have steps which are: ~~"], # -> the part of is in the linetopic title
+	"wh" : [3, "What happens in ==?", "__ happens in the ==", "Where the ~~ happens"],
 	# "implied acronyms": {
-	"td": ["== is defined as?", "It is is defined as __", "It is defined as the ~~"]
+	"td": [3, "== is defined as?", "It is is defined as __", "It is defined as the ~~"]
 	# get idea from this td ^^^^
 }
 
+
+
 # Answers
-# 0 - ~~ fact
-# 1 - __ blanked answer
-# 2 - == topic
+# 1 - ~~ fact
+# 2 - __ blanked answer
+# 3 - == topic
 
 class Topic():
 	def __init__(self, topic, heading_heirarchy):
@@ -116,6 +118,7 @@ class Topic():
 
 	def clean_heading_heirarchy(self, heading_heirarchy: str) -> str:
 		header_tst = re.search(r"(#+)", heading_heirarchy)
+		# numbering_tst = 
 		# bullet_tst = re.search(r"[ 	]*-[ 	]+", heading_heirarchy)
 
 		if header_tst:
@@ -132,6 +135,9 @@ class Topic():
 				return f"h{dynamic_heading_heirarchy}", dynamic_heading_heirarchy
 				# return f"h8"
 
+		# elif:
+		# 	pass
+
 		elif "h" in heading_heirarchy:
 			return heading_heirarchy
 
@@ -146,7 +152,7 @@ class TopicMap():
 			"h5" : [5, ""],
 			"h6" : [6, ""],
 			"h7" : [7, ""], # linetopic or # callout topic test
-			"h8" : [8, ""], # term
+			"h8" : [8, ""], # term  # will be replaced after only one line
 		}
 
 		self._get_maplist()
@@ -249,7 +255,7 @@ def fact_blanker(fact):
 	else:
 		return
 
-def question_gen(acronym: str, line_topic: str, fact, blanked_fact="__", question_type=0):
+def question_gen(acronym: str, line_topic: str, fact, blanked_fact="__", question_type=None, proposed_answer=None):
 	"""Generate question for the front
 
 	Args:
@@ -266,17 +272,10 @@ def question_gen(acronym: str, line_topic: str, fact, blanked_fact="__", questio
 	blanked_fact = blanked_fact.strip()
 	line_topic = line_topic.strip()
 
-	question = acronyms_que[acronym][question_type]
+	question = acronyms_que[acronym][question_type if question_type else acronyms_que[acronym][0]]
 
 	answer = line_topic if "~~" in question else fact # -> topic will be the answer if the quesion contains ~~
 	
-	return question.replace("==", line_topic).replace("__", blanked_fact).replace("~~", fact), answer
+	return question.replace("==", line_topic).replace("__", blanked_fact).replace("~~", proposed_answer if proposed_answer else fact), proposed_answer if proposed_answer else answer
 #change the way of questioning
 
-def anki_card(topic, front, back):
-	print("======================================")
-	print(f"> {topic}\n")
-	print(front)
-	print("--------------fliped------------------")	
-	print(back)
-	print("======================================")
